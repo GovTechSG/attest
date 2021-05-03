@@ -20,8 +20,14 @@ attest is a tool for downloading terraform and verify that the SHASUM matches th
 
 ## Usage
 ```bash
+Example:
+# Download and verify terraform package
+Usage: attest terraform <verion number>
+
+# Deploy package to tfenv
 Usage: attest terraform <verion number> install-tfenv
 
 terraform <verion number>                  Terraform version number to download and attest
 install-tfenv                              Install terraform to tfenv
+
 ```
