@@ -24,7 +24,7 @@ fi
 
 # Verify the signature file is untampered.
 verify_sig_file() {
-	gpg --verify terraform_0.15.1_SHA256SUMS.sig terraform_0.15.1_SHA256SUMS 2>"$fifo_path" &
+	gpg --verify "$terraform_sig" "$terraform_sums" 2>"$fifo_path" &
 	chk_sig=$(tail "$fifo_path" | grep -c "Good signature")
 
 	if [ "$chk_sig" -ne 1 ]; then
@@ -35,7 +35,7 @@ verify_sig_file() {
 
 # Verify the SHASUM matches the archive.
 verify_archive() {
-	chk_sha=$(shasum -a 256 -c terraform_0.15.1_SHA256SUMS 2>/dev/null | grep terraform_0.15.1_darwin_amd64.zip | awk '{print $2}')
+	chk_sha=$(shasum -a 256 -c "$terraform_sums" 2>/dev/null | grep "$terraform" | awk '{print $2}')
 
 	if [ "$chk_sha" != "OK" ]; then
 	       echo "Archive SHASUM does not match!"
