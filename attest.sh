@@ -19,39 +19,39 @@ curl -Os "$terraform_sums_url"
 curl -Os "$terraform_url"
 
 if [ ! -p "$fifo_path" ]; then
-       mkfifo "$fifo_path"
+    mkfifo "$fifo_path"
 fi
 
 # Verify the signature file is untampered.
 verify_sig_file() {
-	gpg --verify "$terraform_sig" "$terraform_sums" 2>"$fifo_path" &
-	chk_sig=$(tail "$fifo_path" | grep -c "Good signature")
+    gpg --verify "$terraform_sig" "$terraform_sums" 2>"$fifo_path" &
+    chk_sig=$(tail "$fifo_path" | grep -c "Good signature")
 
-	if [ "$chk_sig" -ne 1 ]; then
-		echo "Signature file was tampered"
-		exit 2
-	fi
+    if [ "$chk_sig" -ne 1 ]; then
+        echo "Signature file was tampered"
+        exit 2
+    fi
 }
 
 # Verify the SHASUM matches the archive.
 verify_archive() {
-	chk_sha=$(shasum -a 256 -c "$terraform_sums" 2>/dev/null | grep "$terraform" | awk '{print $2}')
+    chk_sha=$(shasum -a 256 -c "$terraform_sums" 2>/dev/null | grep "$terraform" | awk '{print $2}')
 
-	if [ "$chk_sha" != "OK" ]; then
-	       echo "Archive SHASUM does not match!"
-	       exit 3
-       else
-	       echo "SHASUM matches the ${terraform}"
-	fi	       
+    if [ "$chk_sha" != "OK" ]; then
+        echo "Archive SHASUM does not match!"
+        exit 3
+    else
+        echo "SHASUM matches the ${terraform}"
+    fi
 }
 
 # Copy to tfenv path
 tfenv_install() {
-	tfenv_ver=$(tfenv -v | awk '{print $2}')
-	tfenv_version_path=/usr/local/Cellar/tfenv/"$tfenv_ver"/versions/"$tversion"
-	[ ! -d "$tfenv_version_path" ] && mkdir "$tfenv_version_path"
-	set -vx
-	tar xvfz $terraform -C $tfenv_version_path
+    tfenv_ver=$(tfenv -v | awk '{print $2}')
+    tfenv_version_path=/usr/local/Cellar/tfenv/"$tfenv_ver"/versions/"$tversion"
+    [ ! -d "$tfenv_version_path" ] && mkdir "$tfenv_version_path"
+    set -vx
+    tar xvfz $terraform -C $tfenv_version_path
 }
 
 
@@ -60,39 +60,39 @@ help() {
 cat << EOF
 Usage: $0 terraform <verion number> install-tfenv
 
-terraform <verion number>                  Terraform version number to download and attest
+terraform <verion number>                  Terraform version number to download and attest (eg. 0.15.4)
 install-tfenv                              Install terraform to tfenv
 
 EOF
-exit;
+    exit;
 }
 
 case "$3" in
-	install-tfenv)
-		tf=true
-		;;
-	*)
-		help
-		;;
+    install-tfenv)
+        tf=true
+    ;;
+    *)
+        help
+    ;;
 esac
 
 case "$1" in
-	terraform)
-		if [ -z "$2" ]; then
-			echo "Need to pass terraform version"
-			exit 4
-		fi
+    terraform)
+        if [ -z "$2" ]; then
+            echo "Need to pass terraform version"
+            exit 4
+        fi
 
-		verify_sig_file
-		verify_archive
+        verify_sig_file
+        verify_archive
 
-		rm $fifo_path
+        rm $fifo_path
 
-		if [ "$tf" == "true" ]; then
-			tfenv_install
-		fi
-		;;
-	*)
-		help
-		;;
+        if [ "$tf" == "true" ]; then
+            tfenv_install
+        fi
+    ;;
+    *)
+        help
+    ;;
 esac
