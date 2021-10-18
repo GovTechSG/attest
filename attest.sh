@@ -49,7 +49,7 @@ verify_archive() {
 tfenv_install() {
     tfenv_ver=$(tfenv -v | awk '{print $2}')
     tfenv_version_path=/usr/local/Cellar/tfenv/"$tfenv_ver"/versions/"$tversion"
-    [ ! -d "$tfenv_version_path" ] && mkdir "$tfenv_version_path"
+    [ ! -d "$tfenv_version_path" ] && mkdir -p "$tfenv_version_path"
     set -vx
     tar xvfz $terraform -C $tfenv_version_path
 }
