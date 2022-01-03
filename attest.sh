@@ -7,9 +7,20 @@ terraform_sums=terraform_"$tversion"_SHA256SUMS
 terraform=terraform_"$tversion"_darwin_amd64.zip
 terraform_sig_url=https://releases.hashicorp.com/terraform/"$tversion"/"$terraform_sig"
 terraform_sums_url=https://releases.hashicorp.com/terraform/"$tversion"/"$terraform_sums"
+
+case "$(uname -s)" in
+  Linux*)
+    terraform=terraform_"$tversion"_linux_amd64.zip ;;
+  Darwin*)
+    terraform=terraform_"$tversion"_darwin_amd64.zip ;;
+  *) ;;
+esac
+
 terraform_url=https://releases.hashicorp.com/terraform/"$tversion"/"$terraform"
 
-tfenv_version_path=/usr/local/Cellar/tfenv/2.2.0/versions/"$tversion"
+
+tfenv_ver=$(tfenv -v | awk '{print $2}')
+tfenv_version_path=$(which tfenv | awk -F /bin/tfenv '{printf "%s/Cellar/tfenv\n", $1}')/${tfenv_ver}/versions/"$tversion"
 fifo_path=/tmp/fifo
 
 gpg --import $public_key 2> /dev/null
@@ -48,10 +59,17 @@ verify_archive() {
 # Copy to tfenv path
 tfenv_install() {
     tfenv_ver=$(tfenv -v | awk '{print $2}')
-    tfenv_version_path=/usr/local/Cellar/tfenv/"$tfenv_ver"/versions/"$tversion"
+    tfenv_version_path=$(which tfenv | awk -F /bin/tfenv '{printf "%s/Cellar/tfenv\n", $1}')/${tfenv_ver}/versions/"$tversion"
     [ ! -d "$tfenv_version_path" ] && mkdir -p "$tfenv_version_path"
     set -vx
-    tar xvfz $terraform -C $tfenv_version_path
+
+    case "$(uname -s)" in
+      Linux*)
+        unzip $terraform -d $tfenv_version_path ;;
+      Darwin*)
+        tar xvfz $terraform -C $tfenv_version_path ;;
+      *) ;;
+    esac
 }
 
 
